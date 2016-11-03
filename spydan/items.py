@@ -15,4 +15,5 @@ class SpydanItem(scrapy.Item):
     state = scrapy.Field()
     h3 = scrapy.Field()
     pre = scrapy.Field()
+    hostname = scrapy.Field()
     pass

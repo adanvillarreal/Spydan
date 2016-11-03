@@ -4,24 +4,28 @@ import sys
 from scrapy.spiders.init import InitSpider
 from scrapy.utils.response import open_in_browser
 from scrapy.http.cookies import CookieJar
-from Spydan.items import SpydanItem
+from spydan.items import SpydanItem
 import selenium
 from selenium import webdriver
+import subprocess
 
 class LoginSpider(InitSpider):
     name = 'Spydan'
+    #you can modify the following lists alongside with the query to filter your search in Shodan.io 
     login_page = 'https://account.shodan.io/login'
     services = ['mysql', 'cisco', 'webadmin', 'joomla', 'wordpress', 'vmware', 'tandberg', 'oracle', 'snmp', 'ntp', 'ssh']
     products = ['VNC', 'MySQL']
-    ports = ['3389', '3306', '445', '137', '80', '81', '88', '8000', '8001', '8080', '8081', '22', '443', '21', '5900', '5901', '1433', '1521', '7001', '161', '123', '5060', '5061']
+    ports = ['80']
     inquery = 'https://www.shodan.io/search?query='
-    nets = ['net:200.34.186.0/23','net:132.254.0.0/19','net:200.34.188.0/24','net:200.34.190.0/23','net:132.254.112.0/21','net:132.254.232.0/24','net:200.34.185.0/24','net:200.34.106.0/24','net:132.254.120.0/21','net:200.34.110.0/23','net:132.254.72.0/21','net:200.36.240.0/21','net:132.254.104.0/21','net:132.254.96.0/21','net:200.34.152.0/24','net:132.254.64.0/21','net:132.254.128.0/21','net:132.254.192.0/20','net:200.36.224.0/20','net:200.34.96.0/23','net:200.34.98.0/23','net:132.254.56.0/21','net:200.34.108.0/23','net:148.241.224.0/20','net:148.241.96.0/20','net:200.34.100.0/22']
+    #Include the networks you want to scan in the list called nets
+    nets = ['']
     start_urls = []
-    x = 0;
+    #You can modify the search query here. It is shown here with port, but you could also search for products or services. Shodan.io only shows 5 pages of results (circa 50 results), so use the queries wisely.
     for net in nets:
         for port in ports:
             for x in range(1,6):
-                start_urls.append(inquery+net+'&page='+str(x)+'+port:"'+port+'"')
+		#URL maker, here you want to modify the query to suit your needs
+                start_urls.append(inquery+net+'+port:'+port+'&page='+str(x))
     for url in start_urls:
         print url
     def init_request(self):
@@ -30,6 +34,7 @@ class LoginSpider(InitSpider):
     def login(self, response):
         return [scrapy.FormRequest.from_response(response,
                     formid='login-form',
+		    #set your username and password
                     formdata={'username': '', 'password': ''},
                     callback=self.after_login)]
 
@@ -49,7 +54,6 @@ class LoginSpider(InitSpider):
             yield scrapy.Request(url, callback=self.parse_details_contents)
 
     def parse_details_contents(self, response):
-
         for details in response.xpath('//li[@class="service service-long"]'):
             item = SpydanItem()
             item['ip'] = response.xpath('//html/body/div[3]/div/div[2]/div/div[1]/div/h2/text()').extract()
@@ -57,6 +61,11 @@ class LoginSpider(InitSpider):
             item['protocol'] = details.xpath('.//div[@class="protocol"]/text()').extract()
             item['state'] = details.xpath('.//div[@class="state"]/text()').extract()
             head3 = details.xpath('.//div[@class="service-main"]/h3/text()').extract()
+    	    hname = response.xpath('/html/body/div[3]/div/div[2]/div/div[1]/table/tbody/tr[6]/th/text()').extract()
+    	    if hname:
+    		item['hostname'] = hname
+    	    else:
+    		item['hostname'] = 'NOT AVAILABLE'
             if head3:
                 item['h3'] = head3
             else:
