@@ -5,27 +5,28 @@ from scrapy.spiders.init import InitSpider
 from scrapy.utils.response import open_in_browser
 from scrapy.http.cookies import CookieJar
 from spydan.items import SpydanItem
-import selenium
-from selenium import webdriver
 import subprocess
+import argparse
 
+
+#spydan -s mysql,
 class LoginSpider(InitSpider):
     name = 'Spydan'
-    #you can modify the following lists alongside with the query to filter your search in Shodan.io 
+    #you can modify the following lists alongside with the query to filter your search in Shodan.io
     login_page = 'https://account.shodan.io/login'
     services = ['mysql', 'cisco', 'webadmin', 'joomla', 'wordpress', 'vmware', 'tandberg', 'oracle', 'snmp', 'ntp', 'ssh']
     products = ['VNC', 'MySQL']
     ports = ['80']
     inquery = 'https://www.shodan.io/search?query='
     #Include the networks you want to scan in the list called nets
-    nets = ['']
+    nets = ['131.178.0.0/16']
     start_urls = []
     #You can modify the search query here. It is shown here with port, but you could also search for products or services. Shodan.io only shows 5 pages of results (circa 50 results), so use the queries wisely.
     for net in nets:
         for port in ports:
             for x in range(1,6):
 		#URL maker, here you want to modify the query to suit your needs
-                start_urls.append(inquery+net+'+port:'+port+'&page='+str(x))
+                start_urls.append(inquery+'net:'+net+'+port:'+port+'&page='+str(x))
     for url in start_urls:
         print url
     def init_request(self):
@@ -35,7 +36,7 @@ class LoginSpider(InitSpider):
         return [scrapy.FormRequest.from_response(response,
                     formid='login-form',
 		    #set your username and password
-                    formdata={'username': '', 'password': ''},
+                    formdata={'username': '', 'password':''},
                     callback=self.after_login)]
 
     def after_login(self, response):
@@ -51,6 +52,7 @@ class LoginSpider(InitSpider):
         print response.xpath('id("search-results")/div/div[2]/div[1]/text()').extract()
         for result in response.xpath('//div[@class="span9"]/div[@class="search-result"]/div/a[@class="details"]/@href'):
             url = response.urljoin(result.extract())
+            print(result.extract())
             yield scrapy.Request(url, callback=self.parse_details_contents)
 
     def parse_details_contents(self, response):
