@@ -35,24 +35,21 @@ CLI.add_argument(
 )
 CLI.add_argument(
     '--type',
-    help = 'Output type (JSON, CSV, XML)',
-    default = 'CSV'
+    help = 'Output type (json, csv, xml)',
+    default = 'csv'
 )
 CLI.add_argument(
     '--fname',
     help = 'Output filename',
-    default = strftime("%Y-%m-%d-%H:%M:%S", gmtime())
+    default = strftime("%Y%m%d%H%M%S", gmtime())
 )
 args = CLI.parse_args()
 print (args)
-fileout = args.fname
-if args.type == 'CSV':
-    fileout = fileout + '.csv'
-elif args.type == 'JSON':
-    fileout = fileout + '.json'
-else:
-    fileout = fileout + '.xml'
 
-command = ('scrapy crawl Spydan -a user=%s -a password=%s -a nets=%s --output '
-    '%s -a ports=%s -a services=%s') % (args.user, args.pswd, args.nets, fileout, args.ports, args.services)
-print (command)
+
+#scrapy crawl someSpider -o some.json -t json 2> some.text
+
+
+command = ('scrapy crawl Spydan -a user=%s -a password=%s -a nets=%s -t %s -o '
+    '%s.%s  -a ports=%s -a services=%s') % (args.user, args.pswd, args.nets, args.type, args.fname, args.type, args.ports, args.services)
+eval(command)

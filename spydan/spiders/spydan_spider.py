@@ -14,29 +14,44 @@ class LoginSpider(InitSpider):
     name = 'Spydan'
     #you can modify the following lists alongside with the query to filter your search in Shodan.io
     login_page = 'https://account.shodan.io/login'
-    services = ['mysql', 'cisco', 'webadmin', 'joomla', 'wordpress', 'vmware', 'tandberg', 'oracle', 'snmp', 'ntp', 'ssh']
-    products = ['VNC', 'MySQL']
-    ports = ['80']
+
     inquery = 'https://www.shodan.io/search?query='
     #Include the networks you want to scan in the list called nets
-    nets = ['131.178.0.0/16']
     start_urls = []
     #You can modify the search query here. It is shown here with port, but you could also search for products or services. Shodan.io only shows 5 pages of results (circa 50 results), so use the queries wisely.
-    for net in nets:
-        for port in ports:
-            for x in range(1,6):
-		#URL maker, here you want to modify the query to suit your needs
-                start_urls.append(inquery+'net:'+net+'+port:'+port+'&page='+str(x))
-    for url in start_urls:
-        print url
+
+
+    def __init__(self, category='', domain=None, *args, **kwargs):
+        super(MySpider, self).__init__(*args, **kwargs)
+        self.nets = eval(nets)
+        self.services = eval(services)
+        self.products = eval(products)
+        self.ports = eval(ports)
+        self.username = username
+        self.password = password
+        for net in self.nets:
+            for port in self.ports:
+                for x in range(1,6):
+                    start_urls.append(('https://www.shodan.io/search?query=net:%s'
+                        '+port:%s&page=%s') % (net, port, str(x)))
+            for service in self.services:
+                for x in range(1,6):
+                    start_urls.append(('https://www.shodan.io/search?query=net:%s'
+                        '+service:%s&page=%s') % (net, service, str(x)))
+            for product in self.products:
+                for x in range(1,6):
+                    start_urls.append(('https://www.shodan.io/search?query=net:%s'
+                        '+product:%s&page=%s') % (net, product, str(x)))
+
     def init_request(self):
+        print(self.nets)
         return scrapy.Request(url=self.login_page, callback=self.login)
 
     def login(self, response):
         return [scrapy.FormRequest.from_response(response,
                     formid='login-form',
 		    #set your username and password
-                    formdata={'username': '', 'password':''},
+                    formdata={'username':self.username, 'password':self.password},
                     callback=self.after_login)]
 
     def after_login(self, response):
@@ -67,10 +82,10 @@ class LoginSpider(InitSpider):
     	    if hname:
     		item['hostname'] = hname
     	    else:
-    		item['hostname'] = 'NOT AVAILABLE'
+    		item['hostname'] = ''
             if head3:
                 item['h3'] = head3
             else:
-                item['h3'] = 'NOT AVAILABLE'
+                item['h3'] = ''
             item['pre'] = details.xpath('.//div[@class="service-main"]/pre/text()').extract()
             yield item
