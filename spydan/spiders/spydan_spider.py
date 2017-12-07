@@ -11,46 +11,49 @@ import argparse
 
 #spydan -s mysql,
 class LoginSpider(InitSpider):
-    name = 'Spydan'
+    name = 'spydan'
     #you can modify the following lists alongside with the query to filter your search in Shodan.io
     login_page = 'https://account.shodan.io/login'
 
     inquery = 'https://www.shodan.io/search?query='
     #Include the networks you want to scan in the list called nets
-    start_urls = []
+    nets = []
     #You can modify the search query here. It is shown here with port, but you could also search for products or services. Shodan.io only shows 5 pages of results (circa 50 results), so use the queries wisely.
 
 
     def __init__(self, category='', domain=None, *args, **kwargs):
-        super(MySpider, self).__init__(*args, **kwargs)
-        self.nets = eval(nets)
-        self.services = eval(services)
-        self.products = eval(products)
-        self.ports = eval(ports)
-        self.username = username
-        self.password = password
+        super(LoginSpider, self).__init__(*args, **kwargs)
+        self.nets = eval(kwargs.get('nets'))
+        self.services = eval(kwargs.get('services'))
+        self.products = eval(kwargs.get('products'))
+        self.ports = eval(kwargs.get('ports'))
+        self.username = kwargs.get('username')
+        print(self.username)
+        self.password = kwargs.get('password')
         for net in self.nets:
             for port in self.ports:
                 for x in range(1,6):
-                    start_urls.append(('https://www.shodan.io/search?query=net:%s'
+                    self.start_urls.append(('https://www.shodan.io/search?query=net:%s'
                         '+port:%s&page=%s') % (net, port, str(x)))
             for service in self.services:
                 for x in range(1,6):
-                    start_urls.append(('https://www.shodan.io/search?query=net:%s'
+                    self.start_urls.append(('https://www.shodan.io/search?query=net:%s'
                         '+service:%s&page=%s') % (net, service, str(x)))
             for product in self.products:
                 for x in range(1,6):
-                    start_urls.append(('https://www.shodan.io/search?query=net:%s'
+                    self.start_urls.append(('https://www.shodan.io/search?query=net:%s'
                         '+product:%s&page=%s') % (net, product, str(x)))
+            for url in self.start_urls:
+                print(url)
 
     def init_request(self):
-        print(self.nets)
         return scrapy.Request(url=self.login_page, callback=self.login)
 
     def login(self, response):
         return [scrapy.FormRequest.from_response(response,
                     formid='login-form',
 		    #set your username and password
+            #Not authenticating, problem with self.username & password
                     formdata={'username':self.username, 'password':self.password},
                     callback=self.after_login)]
 
@@ -60,9 +63,11 @@ class LoginSpider(InitSpider):
             return
         else:
             self.log('authentication succeed')
+        print ('authentication success *******************************')
         return self.initialized()
 
     def parse(self, response):
+        print("*(YAHSDUIAHSDO&*ASHDIAUSH&iDSUAKDH)")
         print response.xpath('id("search-results")/div/div[2]/div[2]/div[1]/a/text()').extract()
         print response.xpath('id("search-results")/div/div[2]/div[1]/text()').extract()
         for result in response.xpath('//div[@class="span9"]/div[@class="search-result"]/div/a[@class="details"]/@href'):
