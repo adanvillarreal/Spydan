@@ -58,12 +58,13 @@ class LoginSpider(InitSpider):
                     callback=self.after_login)]
 
     def after_login(self, response):
-        if "invalid username or password" in response.body:
-            self.log("Login failed", level=log.ERROR)
+        print (response.body)
+        if "Invalid username or password" in response.body:
+            self.log("Login failed")
             return
         else:
             self.log('authentication succeed')
-        print ('authentication success *******************************')
+        print ('Authentication succeeded')
         return self.initialized()
 
     def parse(self, response):

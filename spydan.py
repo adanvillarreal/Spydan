@@ -1,5 +1,6 @@
 import sys
 import argparse
+import os
 from time import gmtime, strftime
 
 CLI = argparse.ArgumentParser(description='Extracts results from shodan.io')
@@ -29,9 +30,15 @@ CLI.add_argument(
 CLI.add_argument(
     '--services',
     nargs = '+',
-    help = 'Services to filter; e.g. mysql http',
+    help = 'Services to filter; e.g. RDP HTTP',
     default = []
+)
 
+CLI.add_argument(
+    '--products',
+    nargs = '+',
+    help = 'Products to filter; e.g. Cisco, MySQL',
+    default = []
 )
 CLI.add_argument(
     '--type',
@@ -50,6 +57,6 @@ print (args)
 #scrapy crawl someSpider -o some.json -t json 2> some.text
 
 
-command = ('scrapy crawl Spydan -a user="%s" -a password="%s"-a nets="%s" -t "%s" -o '
-    '"%s.%s"  -a ports="%s" -a services="%s"') % (args.user, args.pswd, args.nets, args.type, args.fname, args.type, args.ports, args.services)
-eval(command)
+command = ('scrapy crawl spydan -a username="%s" -a password="%s" -a products="%s" -a nets="%s" -a ports="%s" -a services="%s" -o %s.%s') % (args.user, args.pswd, args.products, args.nets, args.ports, args.services, args.fname, args.type)
+print (command)
+os.system(command)
