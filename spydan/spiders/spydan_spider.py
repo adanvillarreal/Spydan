@@ -28,7 +28,6 @@ class LoginSpider(InitSpider):
         self.products = eval(kwargs.get('products'))
         self.ports = eval(kwargs.get('ports'))
         self.username = kwargs.get('username')
-        print(self.username)
         self.password = kwargs.get('password')
         for net in self.nets:
             for port in self.ports:
@@ -43,8 +42,6 @@ class LoginSpider(InitSpider):
                 for x in range(1,6):
                     self.start_urls.append(('https://www.shodan.io/search?query=net:%s'
                         '+product:%s&page=%s') % (net, product, str(x)))
-            for url in self.start_urls:
-                print(url)
 
     def init_request(self):
         return scrapy.Request(url=self.login_page, callback=self.login)
@@ -52,8 +49,6 @@ class LoginSpider(InitSpider):
     def login(self, response):
         return [scrapy.FormRequest.from_response(response,
                     formid='login-form',
-		    #set your username and password
-            #Not authenticating, problem with self.username & password
                     formdata={'username':self.username, 'password':self.password},
                     callback=self.after_login)]
 
@@ -68,12 +63,8 @@ class LoginSpider(InitSpider):
         return self.initialized()
 
     def parse(self, response):
-        print("*(YAHSDUIAHSDO&*ASHDIAUSH&iDSUAKDH)")
-        print response.xpath('id("search-results")/div/div[2]/div[2]/div[1]/a/text()').extract()
-        print response.xpath('id("search-results")/div/div[2]/div[1]/text()').extract()
         for result in response.xpath('//div[@class="span9"]/div[@class="search-result"]/div/a[@class="details"]/@href'):
             url = response.urljoin(result.extract())
-            print(result.extract())
             yield scrapy.Request(url, callback=self.parse_details_contents)
 
     def parse_details_contents(self, response):
@@ -93,5 +84,5 @@ class LoginSpider(InitSpider):
                 item['h3'] = head3
             else:
                 item['h3'] = ''
-            item['pre'] = details.xpath('.//div[@class="service-main"]/pre/text()').extract()
+            item['banner'] = details.xpath('.//div[@class="service-main"]/pre/text()').extract()
             yield item

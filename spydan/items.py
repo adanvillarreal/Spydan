@@ -14,6 +14,6 @@ class SpydanItem(scrapy.Item):
     protocol = scrapy.Field()
     state = scrapy.Field()
     h3 = scrapy.Field()
-    pre = scrapy.Field()
+    banner = scrapy.Field()
     hostname = scrapy.Field()
     pass
