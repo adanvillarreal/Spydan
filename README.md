@@ -33,5 +33,5 @@ There is a delay between requests of 3 seconds and a limit for 2 concurrent requ
 Adan Villarreal
 
 ## License
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
 
