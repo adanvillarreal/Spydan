@@ -14,7 +14,7 @@ Before you start crawling, you need to have [Scrapy](https://scrapy.org/)
 pip install scrapy
 ```
 ### Usage
-You only need to worry about the file `spydan.py`. You will need to add some arguments when running Spydan. The required ones are username password and networks. Other arguments are ports, services and products.
+You only need to worry about the file `spydan.py`. You will need to add some arguments when running Spydan. The required ones are username, password, and networks. Other arguments are ports, services, and products.
 
 A full example is:
 ```
