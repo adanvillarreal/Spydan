@@ -8,18 +8,11 @@ from spydan.items import SpydanItem
 import subprocess
 import argparse
 
-
-#spydan -s mysql,
 class LoginSpider(InitSpider):
     name = 'spydan'
-    #you can modify the following lists alongside with the query to filter your search in Shodan.io
     login_page = 'https://account.shodan.io/login'
-
     inquery = 'https://www.shodan.io/search?query='
-    #Include the networks you want to scan in the list called nets
     nets = []
-    #You can modify the search query here. It is shown here with port, but you could also search for products or services. Shodan.io only shows 5 pages of results (circa 50 results), so use the queries wisely.
-
 
     def __init__(self, category='', domain=None, *args, **kwargs):
         super(LoginSpider, self).__init__(*args, **kwargs)
